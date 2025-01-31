@@ -1,11 +1,16 @@
 import React, { useState } from "react";
+import { Exercise } from "../interfaces";
 
-const CreateWorkout: React.FC = () => {
+interface CreateWorkoutProps {
+  submitData: (exercise: Omit<Exercise, "id">) => void;
+}
+
+const CreateWorkout = ({ submitData }: CreateWorkoutProps) => {
   const [exercise, setExercise] = useState({
     name: "",
     reps: [0],
     sets: 0,
-    weights: [0],
+    weight: [0],
   });
 
   const handleExerciseChange = ({
@@ -13,12 +18,12 @@ const CreateWorkout: React.FC = () => {
   }: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = target;
 
-    if (name.startsWith("reps") || name.startsWith("weights")) {
+    if (name.startsWith("reps") || name.startsWith("weight")) {
       const index = parseInt(name.split("-")[1]);
       setExercise((prev) => ({
         ...prev,
-        [name.startsWith("reps") ? "reps" : "weights"]: prev[
-          name.startsWith("reps") ? "reps" : "weights"
+        [name.startsWith("reps") ? "reps" : "weight"]: prev[
+          name.startsWith("reps") ? "reps" : "weight"
         ].map((item, i) => (i === index ? parseInt(value) : item)),
       }));
     } else {
@@ -34,13 +39,13 @@ const CreateWorkout: React.FC = () => {
       ...prev,
       sets: prev.sets + 1,
       reps: [...prev.reps, 0],
-      weights: [...prev.weights, 0],
+      weight: [...prev.weight, 0],
     }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission logic here
+    submitData(exercise);
   };
 
   return (
@@ -87,7 +92,7 @@ const CreateWorkout: React.FC = () => {
             <input
               type="number"
               name={`weights-${index}`}
-              value={exercise.weights[index]}
+              value={exercise.weight[index]}
               onChange={handleExerciseChange}
               className="w-16 shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
             />

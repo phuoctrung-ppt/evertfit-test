@@ -1,6 +1,6 @@
 import { http, HttpResponse } from "msw";
 import { faker } from "@faker-js/faker";
-import { WorkoutDayResponse } from "../interfaces";
+import { Exercise, Workout, WorkoutDayResponse } from "../interfaces";
 
 const currentMonth = new Date().getMonth() + 1;
 const daysInMonth = new Date(
@@ -8,7 +8,7 @@ const daysInMonth = new Date(
   currentMonth,
   0
 ).getDate();
-const response = Array.from({ length: daysInMonth }, (_, i) => {
+let response = Array.from({ length: daysInMonth }, (_, i) => {
   const date = (i + 1).toString().padStart(2, "0");
   return {
     id: faker.string.uuid(),
@@ -45,17 +45,22 @@ export const handlers = [
 
   http.put("/exercises/:id", () => {}),
 
-  http.post("/exercises", () => {}),
+  http.post("/exercises/:id", async ({ request, params }) => {
+    const { id } = params;
+    const exercise = (await request.json()) as Exercise;
+    const updatedWorkout = createExercise(id as unknown as string, exercise);
+    return HttpResponse.json(updatedWorkout);
+  }),
 ];
-// const createExercise = (workoutId: string, exercise: Exercise) => {
-//   let updatedWorkout: Workout | undefined;
-//   response = response.map((day) => {
-//     const workout = day.workouts?.find((workout) => workout.id === workoutId);
-//     if (workout) {
-//       workout.exercises.push(exercise);
-//       updatedWorkout = workout;
-//     }
-//     return day;
-//   });
-//   return updatedWorkout;
-// };
+const createExercise = (workoutId: string, exercise: Exercise) => {
+  let updatedWorkout: Workout | undefined;
+  response = response.map((day) => {
+    const workout = day.workouts?.find((workout) => workout.id === workoutId);
+    if (workout) {
+      workout.exercises.push(exercise);
+      updatedWorkout = workout;
+    }
+    return day;
+  });
+  return updatedWorkout;
+};

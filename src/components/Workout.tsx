@@ -4,22 +4,49 @@ import { MoreField } from "../assets/icons/MoreFiled";
 import { Exercise } from "../interfaces";
 import CreateWorkout from "../modules/create-workout";
 import Modal from "./Modal";
+import { createWorkout } from "../services";
 
 interface IWorkoutProps {
   title: string;
+  date: string;
+  id: string;
   exercises: Exercise[];
   isDragging?: boolean;
+  callback?: () => void;
 }
 
-export const Workout = ({ title, exercises, isDragging }: IWorkoutProps) => {
+export const Workout = ({
+  title,
+  date,
+  id,
+  exercises,
+  isDragging,
+  callback,
+}: IWorkoutProps) => {
   const [open, setOpen] = useState(false);
-
+  const handleCreateWorkout = async (data: Omit<Exercise, "id">) => {
+    try {
+      await createWorkout(id, data);
+    } catch (e) {
+      console.log(e);
+    } finally {
+      setOpen(false);
+      callback && callback();
+    }
+  };
   return (
     <>
       <div
         className={`bg-[#FFFFFFCC] border mb-[6px] border-[#22242626] rounded-[7px] px-[7px] py-[5px] grid gap-[5px] ${
           isDragging ? "opacity-50" : ""
-        } cursor-move`}>
+        } cursor-move`}
+        draggable
+        onDragStart={(e) => {
+          e.dataTransfer.setData(
+            "workout",
+            JSON.stringify({ ...exercises, id, title, date: date })
+          );
+        }}>
         <div className="flex justify-between items-center">
           <h4 className="uppercase max-w-[140px] overflow-hidden text-nowrap text-ellipsis font-bold text-[10px] text-[#5A57CB] leading-[13.6px]">
             {title}
@@ -59,7 +86,7 @@ export const Workout = ({ title, exercises, isDragging }: IWorkoutProps) => {
         isOpen={open}
         onClose={() => setOpen(!open)}
         title="Create Workout">
-        <CreateWorkout />
+        <CreateWorkout submitData={handleCreateWorkout} />
       </Modal>
     </>
   );

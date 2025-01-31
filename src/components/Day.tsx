@@ -2,13 +2,15 @@ import { useEffect, useState } from "react";
 import type { Workout as WorkoutType } from "../interfaces";
 import { Workout } from "./Workout";
 import { DragAndDrop } from "./DragAndDrop";
+import { Add } from "../assets/icons/Add";
 
 interface IDayProps {
   date: string;
   workouts?: WorkoutType[];
+  callback?: () => void;
 }
 
-export const Day = ({ date, workouts }: IDayProps) => {
+export const Day = ({ date, workouts, callback }: IDayProps) => {
   const [currentDay, setCurrentDay] = useState<string>("");
   const [dayWorkouts, setDayWorkouts] = useState<WorkoutType[]>(workouts || []);
 
@@ -23,7 +25,6 @@ export const Day = ({ date, workouts }: IDayProps) => {
   }, [workouts]);
 
   const handleDrop = (updatedWorkouts: WorkoutType[]) => {
-    console.log("🚀 ~ handleDrop ~ updatedWorkouts:", updatedWorkouts);
     setDayWorkouts(updatedWorkouts);
   };
 
@@ -35,10 +36,19 @@ export const Day = ({ date, workouts }: IDayProps) => {
         } `}>
         {date}
       </h3>
+      <div className="flex item-center justify-end py-1 cursor-pointer">
+        <Add />
+      </div>
       <DragAndDrop
         items={dayWorkouts}
         renderItem={(workout, index, isDragging) => (
-          <Workout key={workout.id} {...workout} isDragging={isDragging} />
+          <Workout
+            callback={callback}
+            date={date}
+            key={workout.id}
+            {...workout}
+            isDragging={isDragging}
+          />
         )}
         onDrop={handleDrop}
       />
